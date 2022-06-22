@@ -83,8 +83,5 @@ train_table_hist=table(array_hists_names,array_hists_classes,array_hists);
 
 hists = train_table_hist.array_hists;
 for i=1:size(hists,1)
-    for j=1:n_clusters
-        hists(i,j) = (hists(i,j)/sum(hists(i,:)))*log(size(hists,1)/(sum(hists(:,j)>0)));
-    end
+    for j=1:siz
 end
-train_table_hist_TF_IDF=table(array_hists_names,array_hists_classes,hists);

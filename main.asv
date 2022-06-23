@@ -1,30 +1,32 @@
 %% inizializzazione hyps
 onGpu = 1;
-n_clusters = 100;
-max_iter_k_means = 500;
+n_clusters = 500;
+max_iter_k_means = 1500;
 %% creazione del ds e splits
 ds_path="garbage_classification";
 [train_set,val_set,test_set] = split_ds(ds_path);
 
 %% estrazione keypoints e features per il train set
 %https://www.mathworks.com/help/vision/feature-detection-and-extraction.html
-train_features=[];
-train_labels=[];
-train_reference={};
-index=1;
-while hasdata(train_set)
-    fprintf("Estrazione train features immagine: %d\n",index);
-    [img,info] = read(train_set);
-    [features, valid_points] = img_features_extraction(img);
-    train_features = vertcat(train_features,features);
-    %devo tener conto di che immagine sono partito, classe è opzionale
-    for i=1:size(features,1)
-        train_labels = vertcat(train_labels,info.Label);
-        train_reference = vertcat(train_reference,info.Filename);
+if 0
+    train_features=[];
+    train_labels=[];
+    train_reference={};
+    index=1;
+    while hasdata(train_set)
+        fprintf("Estrazione train features immagine: %d\n",index);
+        [img,info] = read(train_set);
+        [features, valid_points] = img_features_extraction(img);
+        train_features = vertcat(train_features,features);
+        %devo tener conto di che immagine sono partito, classe è opzionale
+        for i=1:size(features,1)
+            train_labels = vertcat(train_labels,info.Label);
+            train_reference = vertcat(train_reference,info.Filename);
+        end
+        index=index+1;
     end
-    index=index+1;
+    train_table=table(train_reference,train_labels,train_features);
 end
-train_table=table(train_reference,train_labels,train_features);
 %% creazione vocabolario
 train_features=train_table.train_features;
 tic; % Start stopwatch timer
@@ -83,5 +85,8 @@ train_table_hist=table(array_hists_names,array_hists_classes,array_hists);
 
 hists = train_table_hist.array_hists;
 for i=1:size(hists,1)
-    for j=1:siz
+    for j=1:n_clusters
+        hists(i,j) = (hists(i,j)/sum(hists(i,:)))*log(size(hists,1)/(sum(hists(:,j)>0)));
+    end
 end
+train_table_hist_TF_IDF=table(array_hists_names,array_hists_classes,hists);

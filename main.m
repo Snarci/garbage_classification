@@ -1,40 +1,52 @@
 %% inizializzazione hyps
-onGpu = 1;
-n_clusters = 100;
-max_iter_k_means = 500;
+onGpu = 0;
+n_clusters = 125;
+max_iter_k_means = 1000;
+need_to_extract_features = 1;
+
 %% creazione del ds e splits
 ds_path="garbage_classification";
 [train_set,val_set,test_set] = split_ds(ds_path);
 
 %% estrazione keypoints e features per il train set
 %https://www.mathworks.com/help/vision/feature-detection-and-extraction.html
-train_features=[];
-train_labels=[];
-train_reference={};
-index=1;
-while hasdata(train_set)
-    fprintf("Estrazione train features immagine: %d\n",index);
-    [img,info] = read(train_set);
-    [features, valid_points] = img_features_extraction(img);
-    train_features = vertcat(train_features,features);
-    %devo tener conto di che immagine sono partito, classe è opzionale
-    for i=1:size(features,1)
-        train_labels = vertcat(train_labels,info.Label);
-        train_reference = vertcat(train_reference,info.Filename);
+if need_to_extract_features
+    train_features=[];
+    train_labels=[];
+    train_reference={};
+    index=1;
+    while hasdata(train_set)
+        fprintf("Estrazione train features immagine: %d\n",index);
+        [img,info] = read(train_set);
+        [features, valid_points] = img_features_extraction_V2(img,"BRISK");
+        train_features = vertcat(train_features,features);
+        %devo tener conto di che immagine sono partito, classe è opzionale
+        for i=1:size(features,1)
+            train_labels = vertcat(train_labels,info.Label);
+            train_reference = vertcat(train_reference,info.Filename);
+        end
+        index=index+1;
     end
-    index=index+1;
+    train_table=table(train_reference,train_labels,train_features);
 end
-train_table=table(train_reference,train_labels,train_features);
 %% creazione vocabolario
 train_features=train_table.train_features;
 tic; % Start stopwatch timer
 if onGpu
-    device=gpuDevice(1);
+    gpuDevice(1)
     train_featuresGpu=gpuArray(train_features);
-    [idx,C,sumd,D] = kmeans(train_featuresGpu,n_clusters,'MaxIter',...
+    
+    stream = RandStream('mlfg6331_64');  % Random number stream
+    options = statset('UseParallel',1,'UseSubstreams',1,...
+    'Streams',stream);
+    
+    [idx,C,sumd,D] = kmeans(train_featuresGpu,n_clusters,'Options',options,'MaxIter',...
         max_iter_k_means,'Display','final');
 else
-    [idx,C,sumd,D] = kmeans(train_features,n_clusters,'MaxIter',...
+        stream = RandStream('mlfg6331_64');  % Random number stream
+    options = statset('UseParallel',1,'UseSubstreams',1,...
+    'Streams',stream);
+    [idx,C,sumd,D] = kmeans(train_features,n_clusters,'Options',options,'MaxIter',...
         max_iter_k_means,'Display','final');
 end
 toc % Terminate stopwatch timer

@@ -41,10 +41,10 @@ stats_Sift_LBP = computeStats(cm_Sift_LBP);
 
 %% Latex Results
 
-Name = stats_Sift.name;
-Classes = stats_Sift.classes;
-Macro = stats_Sift.macroAVG;
-Micro = stats_Sift.microAVG;
+Name = stats_Sift_LBP.name;
+Classes = stats_Sift_LBP.classes;
+Macro = stats_Sift_LBP.macroAVG;
+Micro = stats_Sift_LBP.microAVG;
 
 Final = horzcat(Name,Classes,Macro,Micro);
 
@@ -55,8 +55,8 @@ Classes2 = stats_Sift_LBP.classes;
 Macro2 = stats_Sift_LBP.macroAVG;
 Micro2 = stats_Sift_LBP.microAVG;
 
-Final2 = horzcat(Name2,Classes2,Macro2,Micro2);
+Final2 = horzcat(Name,Classes,Macro,Micro);
 
-latex_table2 = latex(str2sym(Final))
+latex_table = latex(str2sym(Final))
 
 

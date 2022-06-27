@@ -1,4 +1,4 @@
-function [train_table] = features_extraction(train_set,descriptor_options,n_max)
+function [train_table] = features_extraction(train_set,size_patch)
 %FEATURES_EXTRACTION Summary of this function goes here
 train_features=[];
 train_labels=[];
@@ -7,7 +7,7 @@ index=1;
 while hasdata(train_set)
     fprintf("Estrazione train features immagine: %d\n",index);
     [img,info] = read(train_set);
-    [features, valid_points] = img_features_extraction_V2(img,descriptor_options,n_max);
+    [features] = img_features_extraction_V2_dense(img,size_patch);
     train_features = vertcat(train_features,features);
     %devo tener conto di che immagine sono partito, classe è opzionale
     for i=1:size(features,1)

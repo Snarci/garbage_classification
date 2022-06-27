@@ -1,2 +1,5 @@
 
 computed_features/train_features.mat
+*.mat
+*.mat
+*.rar
